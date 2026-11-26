@@ -1,11 +1,16 @@
 """CPS 310 Recipe & Meal Planner starter application."""
 
 from recipe_utils import (
+    DAYS_OF_WEEK,
+    add_meal_to_plan,
     add_recipe,
     create_recipe,
     filter_by_category,
     load_config,
+    load_meal_plan,
     load_recipes,
+    remove_meal_from_plan,
+    save_meal_plan,
     save_recipes,
     search_by_name,
 )
@@ -96,10 +101,52 @@ def choose_recipe(recipes):
     display_recipe(recipes[selection - 1])
 
 
+def show_meal_plan(meal_plan):
+    """Print the meal plan, one day per line."""
+    print("\nWeekly Meal Plan")
+    print("----------------")
+    for day in DAYS_OF_WEEK:
+        meals = meal_plan[day]
+        if meals:
+            print(f"{day}: {', '.join(meals)}")
+        else:
+            print(f"{day}: (nothing planned)")
+
+
+def add_meal_from_input(meal_plan, recipes, meal_plan_file):
+    """Ask which recipe to add to which day, then save the plan."""
+    list_recipes(recipes)
+    recipe_name = input("\nRecipe name to add: ")
+    day = input("Day of the week: ")
+    try:
+        add_meal_to_plan(meal_plan, day, recipe_name, recipes)
+    except ValueError as error:
+        print(f"Could not add meal: {error}")
+        return
+    save_meal_plan(meal_plan_file, meal_plan)
+    print("Meal added to your plan!")
+
+
+def remove_meal_from_input(meal_plan, meal_plan_file):
+    """Ask which recipe to remove from which day, then save the plan."""
+    show_meal_plan(meal_plan)
+    day = input("\nDay of the week: ")
+    recipe_name = input("Recipe name to remove: ")
+    try:
+        remove_meal_from_plan(meal_plan, day, recipe_name)
+    except ValueError as error:
+        print(f"Could not remove meal: {error}")
+        return
+    save_meal_plan(meal_plan_file, meal_plan)
+    print("Meal removed from your plan.")
+
+
 def main():
     """Run the starter Recipe & Meal Planner."""
     config = load_config("config.json")
     recipes = load_recipes(config["recipe_file"])
+    meal_plan_file = config.get("meal_plan_file", "meal_plan.json")
+    meal_plan = load_meal_plan(meal_plan_file)
 
     while True:
         print(f"\n{config['app_title']}")
@@ -109,7 +156,10 @@ def main():
         print("3. Filter recipes by category")
         print("4. View recipe details")
         print("5. Add a new recipe")
-        print("6. Exit")
+        print("6. View weekly meal plan")
+        print("7. Add a recipe to the meal plan")
+        print("8. Remove a recipe from the meal plan")
+        print("9. Exit")
 
         choice = input("\nChoose an option: ").strip()
 
@@ -126,10 +176,16 @@ def main():
         elif choice == "5":
             add_recipe_from_input(recipes, config["recipe_file"])
         elif choice == "6":
+            show_meal_plan(meal_plan)
+        elif choice == "7":
+            add_meal_from_input(meal_plan, recipes, meal_plan_file)
+        elif choice == "8":
+            remove_meal_from_input(meal_plan, meal_plan_file)
+        elif choice == "9":
             print("Goodbye!")
             break
         else:
-            print("Invalid option. Please choose 1-6.")
+            print("Invalid option. Please choose 1-9.")
 
 
 if __name__ == "__main__":
