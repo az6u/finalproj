@@ -1,3 +1,6 @@
 .venv/
 __pycache__/
 .pytest_cache/
+
+# Personal meal plan data (created when you use the app)
+meal_plan.json
